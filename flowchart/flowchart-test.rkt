@@ -19,6 +19,5 @@
     (found (return (car valuelist)))
     ))
 
-; (print (flowchart-run find-name '(y (x y z) (1 2 3))))
 (check-equal? (flowchart-run find-name '(y (x y z) (1 2 3))) '2)
 

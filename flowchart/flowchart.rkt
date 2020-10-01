@@ -9,6 +9,7 @@
   (define blocks (cdr program))
   
   (define namespace (make-base-namespace))
+  (parameterize ([current-namespace namespace]) (eval '(require racket)))
   (define (set-value var value)
     (parameterize ([current-namespace namespace]) (namespace-set-variable-value! var value)))
   (define (eval-expr expr)
