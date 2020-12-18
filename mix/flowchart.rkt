@@ -1,15 +1,16 @@
 #lang racket
 
-(provide flowchart-run)
+(provide fc-run)
 
-;; FlowChart interpreter
+;; FlowChart interpreter on Racket
 
-(define (flowchart-run program data)
+(define (fc-run program data)
   (define data-vars (cdar program))
   (define blocks (cdr program))
   
   (define namespace (make-base-namespace))
   (parameterize ([current-namespace namespace]) (eval '(require racket)))
+  (parameterize ([current-namespace namespace]) (eval '(require "utils.rkt")))
   (define (set-value var value)
     (parameterize ([current-namespace namespace]) (namespace-set-variable-value! var value)))
   (define (eval-expr expr)
@@ -17,7 +18,7 @@
   (define (save-label block)
     (set-value (car block) (cdr block)))
   
-  (define (eval-assignment assignment) 
+  (define (eval-assignment assignment)
     (match assignment
       [`(:= ,var ,expr) (set-value var (eval-expr expr))]))
   

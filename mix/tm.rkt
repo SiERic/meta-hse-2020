@@ -1,23 +1,15 @@
 #lang racket
 
-(require "flowchart.rkt")
 (provide tm-int)
 
-;; Post Turing Machine interpreter for FlowChart
+;; Post Turing Machine interpreter on FlowChart
 
 (define tm-int 
   '((read q right)
     (init        (:= qtail q)
                  (:= left '())
-                 (:= space '2)
                  (goto loop))
-    (loop        (if (null? qtail) stop check-right))
-    (check-right (if (null? right) pad-right check-left))
-    (check-left  (if (null? left)  pad-left  cont))
-    (pad-right   (:= right `(,space))
-                 (goto check-left))
-    (pad-left    (:= left  `(,space))
-                 (goto cont))
+    (loop        (if (null? qtail) stop cont))
     (cont        (:= instruction (car qtail))
                  (:= qtail (cdr qtail))
                  (:= operator (cadr instruction))
@@ -26,11 +18,11 @@
     (cont2       (if (equal? operator 'write) do-write cont3))
     (cont3       (if (equal? operator 'goto)  do-goto  cont4))
     (cont4       (if (equal? operator 'if  )  do-if    error))
-    (do-right    (:= left  (cons (car right) left))
-                 (:= right (cdr right))
+    (do-right    (:= left  (cons (car-or-space right) left))
+                 (:= right (cdr-or-empty right))
                  (goto loop))
-    (do-left     (:= right (cons (car left) right))
-                 (:= left  (cdr left))
+    (do-left     (:= right (cons (car-or-space left) right))
+                 (:= left  (cdr-or-empty left))
                  (goto loop))
     (do-write    (:= symbol (caddr instruction))
                  (:= right (cons symbol (cdr right)))
@@ -44,5 +36,5 @@
     (jump        (:= qtail (list-tail q nextlabel))
                  (goto loop))
     (error       (return (list 'syntaxerror: instruction)))
-    (stop        (return (dropf-right right (lambda (x) (eq? x space)))))
+    (stop        (return (dropf-right right (lambda (x) (eq? x '2)))))
 ))
