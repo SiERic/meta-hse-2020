@@ -19,6 +19,23 @@
 (provide cdr-or-empty)
 (provide get-blocks-in-pending)
 (provide clear-vs)
+(provide create-ns)
+(provide eval-assign-ns)
+(provide eval-expr-ns)
+
+(define (create-ns data)
+  (define ns (make-base-namespace))
+  (parameterize ([current-namespace ns]) (eval '(require racket)))
+  (parameterize ([current-namespace ns]) (eval '(require "utils.rkt")))
+  (map (lambda (x) (eval-assign-ns (car x) (cdr x) ns)) data)
+  ns)
+
+(define (eval-assign-ns var value ns)
+  (parameterize ([current-namespace ns]) (namespace-set-variable-value! var value))
+  ns)
+
+(define (eval-expr-ns expr ns)
+  (parameterize ([current-namespace ns]) (eval expr)))
 
 (define (get-blocks-in-pending program division)
   (define (get-dynamic-jump-labels bb)

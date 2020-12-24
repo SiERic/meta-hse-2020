@@ -21,6 +21,7 @@
   (define (eval-assignment assignment)
     (match assignment
       [`(:= ,var ,expr)
+       (flush-output)
        (set-value var (eval-expr expr))]))
   
   (define (goto label)

@@ -84,3 +84,6 @@
     ((lol 1 2 3) (:= heh 95) (goto (lol 1 4 5)))
     ((lol 1 4 5) (:= heh 96) (goto (end 118 23 45)))
     ((end 118 23 45) (return kek))))
+
+(define bbs (cdr program-example))
+(println (cdar bbs))

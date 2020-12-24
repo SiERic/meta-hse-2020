@@ -1,0 +1,25 @@
+#lang racket
+
+(require "flowchart.rkt")
+(require "flowchart-flowchart.rkt")
+(require "utils.rkt")
+(require rackunit)
+
+(define get-value
+  '((read value)
+    (main (return value))
+  ))
+
+(check-equal? (fc-run fc-int `(,get-value (2))) '2)
+
+(define find-name
+  '((read name namelist valuelist)
+    (search (if (equal? name (car namelist)) found cont))
+    (cont (:= valuelist (cdr valuelist))
+          (:= namelist  (cdr namelist))
+          (goto search))
+    (found (return (car valuelist)))
+    ))
+
+(check-equal? (fc-run fc-int `(,find-name (y (x y z) (1 2 3)))) '2)
+
