@@ -75,8 +75,6 @@
 
 (define (initial-code pp vs)
   (println pp)
-  (println (cdr vs))
-  (println '_)
   (flush-output)
   (list (name-block pp vs)))
 
