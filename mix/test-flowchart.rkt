@@ -8,7 +8,7 @@
     (main (return value))
   ))
 
-(check-equal? (fc-int get-value '(2)) '2)
+(check-equal? (fc-run get-value '(2)) '2)
 
 (define find-name
   '((read name namelist valuelist)
@@ -19,5 +19,5 @@
     (found (return (car valuelist)))
     ))
 
-(check-equal? (fc-int find-name '(y (x y z) (1 2 3))) '2)
+(check-equal? (fc-run find-name '(y (x y z) (1 2 3))) '2)
 

@@ -20,7 +20,8 @@
   
   (define (eval-assignment assignment)
     (match assignment
-      [`(:= ,var ,expr) (set-value var (eval-expr expr))]))
+      [`(:= ,var ,expr)
+       (set-value var (eval-expr expr))]))
   
   (define (goto label)
     (eval-block (eval-expr label)))

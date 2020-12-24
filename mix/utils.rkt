@@ -1,5 +1,6 @@
 #lang racket
 
+(provide next-label-after)
 (provide lookup)
 (provide init-residual)
 (provide name-block)
@@ -16,6 +17,23 @@
 (provide rename)
 (provide car-or-space)
 (provide cdr-or-empty)
+(provide get-blocks-in-pending)
+(provide clear-vs)
+
+(define (get-blocks-in-pending program division)
+  (define (get-dynamic-jump-labels bb)
+    (match bb
+      [(list assignments ... jump)
+        (match jump
+          [`(if ,expr ,then-label ,else-label) (if (is-static-expr? expr division) '() `(,then-label ,else-label))]
+          [else '()])]))
+    (cons (caadr program) (remove-duplicates (flatten (map get-dynamic-jump-labels (cdr program))))))
+
+(define (next-label-after pp blocks)
+  (cond 
+    [(and (equal? (car blocks) pp) (> (length blocks) 1)) (cadr blocks)]
+    [(<= (length blocks) 1) '()]
+    [else (next-label-after pp (cdr blocks))]))
 
 (define space 2)
 
@@ -40,6 +58,9 @@
 
 (define (initial-code pp vs)
   (println pp)
+  (println (cdr vs))
+  (println '_)
+  (flush-output)
   (list (name-block pp vs)))
 
 (define (first-command bb)
@@ -55,32 +76,35 @@
 (define (is-static-var? var division)
   (if (member var (car division)) #t #f))
 
-(define (is-dynamic-var? var division)
-  (if (member var (cadr division)) #t #f))
-
 (define (substitute vs var value)
   (cond
-    [(empty? vs) vs]
+    [(empty? vs) `((,var . ,value))]
     [(equal? var (caar vs)) (cons `(,var . ,value) (cdr vs))]
     [else (cons (car vs) (substitute (cdr vs) var value))]))
+
+(define (clear-vs vs vs0)
+  (take vs (length vs0)))
 
 (define (extend-block code command)
   (append code (list command)))
 
 (define (is-static-expr? expr division)
   (cond
-    [(symbol? expr) (not (is-dynamic-var? expr division))]
-    [(and (list? expr) (equal? (car expr) 'quote)) #t]
-    [(list? expr) (andmap (lambda (e) (is-static-expr? e division)) expr)]
-    [else #t]))
+    [(symbol? expr) (is-static-var? expr division)] ; 'x
+    [(and (list? expr) (empty? expr)) #t]
+    [(and (list? expr) (equal? (car expr) 'quote)) #t] ; '(x y z)
+    [(list? expr) (andmap (lambda (x) (is-static-expr? x division)) (cdr expr))] ; (f args)
+    [else #t])) ; 1
 
 (define (reduce-expr expr vs division)
-  (if (list? expr)
-      (if (equal? (car expr) 'quote)
-          expr
-          (map (lambda (x) (reduce-expr x vs division)) expr))
-      (if (is-static-var? expr division) `',(eval-expr expr vs) expr)))
-
+  (if (is-static-expr? expr division)
+    `',(eval-expr expr vs)
+    (cond
+      [(not (list? expr)) expr]
+      [(empty? expr) expr]
+      [(equal? (car expr) 'quote) expr]
+      [(equal? (car expr) 'lambda) expr]
+      [else (cons (car expr) (map (lambda (x) (reduce-expr x vs division)) (cdr expr)))])))
 
 (define (eval-expr expr vs)
   (define namespace (make-base-namespace))
