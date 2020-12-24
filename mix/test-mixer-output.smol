@@ -1,0 +1,101 @@
+
+ ==  0 FUTAMURA == 
+0 Futamura
+
+'((read valuelist) (search0 (:= valuelist (cdr valuelist)) (return (car valuelist))))
+
+ ==  I FUTAMURA == 
+I Futamura for TM
+
+'((read right)
+  (init0 (:= left '()) (:= symbol '0) (if (equal? symbol (car right)) jump0 loop0))
+  (jump0
+   (:= symbol '1)
+   (:= right (cons symbol (cdr right)))
+   (return (dropf-right right (lambda (x) (eq? x '2)))))
+  (loop0
+   (:= left (cons (car-or-space right) left))
+   (:= right (cdr-or-empty right))
+   (:= symbol '0)
+   (if (equal? symbol (car right)) jump0 loop0)))
+
+I Futamura for FC
+
+'((read data)
+  (init0
+   (:= ns (create-ns (map cons '(name namelist valuelist) data)))
+   (if (eval-expr-ns '(equal? name (car namelist)) ns) command-if-true0 command-if-false0))
+  (command-if-true0 (return (eval-expr-ns '(car valuelist) ns)))
+  (command-if-false0
+   (:= ns (eval-assign-ns 'valuelist (eval-expr-ns '(cdr valuelist) ns) ns))
+   (:= ns (eval-assign-ns 'namelist (eval-expr-ns '(cdr namelist) ns) ns))
+   (if (eval-expr-ns '(equal? name (car namelist)) ns) command-if-true0 command-if-false0)))
+
+ ==  II FUTAMURA == 
+II Futamura for TM
+
+  TM -> FC compiler:
+
+  TM compiled target:
+'((read right)
+  (init0 (:= left '()) (:= symbol '0) (if (equal? symbol (car right)) jump0 loop0))
+  (jump0
+   (:= symbol '1)
+   (:= right (cons symbol (cdr right)))
+   (return (dropf-right right (lambda (x) (eq? x '2)))))
+  (loop0
+   (:= left (cons (car-or-space right) left))
+   (:= right (cdr-or-empty right))
+   (:= symbol '0)
+   (if (equal? symbol (car right)) jump0 loop0)))
+
+II Futamura for FC
+
+  FC -> FC compiler:
+
+  FC compiled target:
+'((read data)
+  (init0
+   (:= ns (create-ns (map cons '(name namelist valuelist) data)))
+   (if (eval-expr-ns '(equal? name (car namelist)) ns) command-if-true0 command-if-false0))
+  (command-if-false0
+   (:= ns (eval-assign-ns 'valuelist (eval-expr-ns '(cdr valuelist) ns) ns))
+   (:= ns (eval-assign-ns 'namelist (eval-expr-ns '(cdr namelist) ns) ns))
+   (if (eval-expr-ns '(equal? name (car namelist)) ns) command-if-true0 command-if-false0))
+  (command-if-true0 (return (eval-expr-ns '(car valuelist) ns))))
+
+ ==  III FUTAMURA == 
+
+cgen:
+
+III Futamura for TM
+
+  TM -> FC generated compiler:
+
+  TM generated-compiled target:
+'((read right)
+  (init0 (:= left '()) (:= symbol '0) (if (equal? symbol (car right)) jump0 loop0))
+  (jump0
+   (:= symbol '1)
+   (:= right (cons symbol (cdr right)))
+   (return (dropf-right right (lambda (x) (eq? x '2)))))
+  (loop0
+   (:= left (cons (car-or-space right) left))
+   (:= right (cdr-or-empty right))
+   (:= symbol '0)
+   (if (equal? symbol (car right)) jump0 loop0)))
+
+III Futamura for FC
+
+  FC -> FC generated compiler:
+
+  FC generated-compiled target:
+'((read data)
+  (init0
+   (:= ns (create-ns (map cons '(name namelist valuelist) data)))
+   (if (eval-expr-ns '(equal? name (car namelist)) ns) command-if-true0 command-if-false0))
+  (command-if-true0 (return (eval-expr-ns '(car valuelist) ns)))
+  (command-if-false0
+   (:= ns (eval-assign-ns 'valuelist (eval-expr-ns '(cdr valuelist) ns) ns))
+   (:= ns (eval-assign-ns 'namelist (eval-expr-ns '(cdr namelist) ns) ns))
+   (if (eval-expr-ns '(equal? name (car namelist)) ns) command-if-true0 command-if-false0)))
